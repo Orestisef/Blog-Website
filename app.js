@@ -3,6 +3,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+//require mongoose
+const mongoose = require("mongoose");
 const _ = require('lodash');
 
 const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
@@ -11,8 +13,6 @@ const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rho
 
 const app = express();
 
-let posts = [];
-
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({
@@ -20,12 +20,26 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public"));
 
+//connect to a new database called blogDB
+mongoose.connect("mongodb://localhost:27017/blogDB", {useNewUrlParser:true});
+
+//create a new postSchema that contains a title and content
+const postSchema = {
+  title: String,
+  content: String
+};
+// create a new mongoose model using the schema to define a posts collection
+const Post = mongoose.model("Post", postSchema);
+
+let posts = [];
+
 app.get("/", function(req, res) {
   res.render("home", {
     startingContent: homeStartingContent,
     posts: posts
   });
 });
+
 
 app.get("/about", function(req, res) {
   res.render("about", {
@@ -45,13 +59,13 @@ app.get("/compose", function(req, res) {
 
 app.post("/compose", function(req, res) {
 
-  const post = {
-    title: req.body.newTitle,
-    content: req.body.newBody
-  };
+  const post = new Post ({
+    title: req.body.postTitle,
+    content: req.body.postBody
+  });
 
-  posts.push(post);
-
+  //posts.push(post);
+  post.save();
   res.redirect("/");
 });
 
