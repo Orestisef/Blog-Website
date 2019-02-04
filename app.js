@@ -31,13 +31,16 @@ const postSchema = {
 // create a new mongoose model using the schema to define a posts collection
 const Post = mongoose.model("Post", postSchema);
 
-let posts = [];
 
 app.get("/", function(req, res) {
-  res.render("home", {
-    startingContent: homeStartingContent,
-    posts: posts
+  //find all the posts in the posts collection and render that in the home.ejs file
+  Post.find({}, function(err, posts){
+    res.render("home", {
+      startingContent: homeStartingContent,
+      posts: posts
+    });
   });
+
 });
 
 
@@ -64,9 +67,12 @@ app.post("/compose", function(req, res) {
     content: req.body.postBody
   });
 
-  //posts.push(post);
-  post.save();
-  res.redirect("/");
+  post.save(function(err){
+    if(!err){
+      res.redirect("/");
+    }
+  });
+
 });
 
 
